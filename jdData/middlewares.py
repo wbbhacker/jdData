@@ -4,9 +4,16 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options    # 使用无头浏览器
 from scrapy import signals
+from scrapy.http.response.html import HtmlResponse
+import time
 
+# 无头浏览器设置
+chorme_options = Options()
+chorme_options.add_argument("--headless")
+chorme_options.add_argument("--disable-gpu")
 
 class JddataSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -60,7 +67,9 @@ class JddataDownloaderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
-
+    def __init__(self):
+        self.driver = webdriver.Chrome(chrome_options=chorme_options)
+        
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
@@ -78,7 +87,12 @@ class JddataDownloaderMiddleware(object):
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
-        return None
+        self.driver.get(request.url)
+        time.sleep(0.5)
+        source = self.driver.page_source
+        response = HtmlResponse(url=self.driver.current_url, body=source, encoding='utf-8', request=request)
+
+        return response
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
