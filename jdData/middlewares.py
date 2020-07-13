@@ -69,7 +69,9 @@ class JddataDownloaderMiddleware(object):
     # passed objects.
     def __init__(self):
         self.driver = webdriver.Chrome(chrome_options=chorme_options)
-        
+    
+    def __del__(self):
+        self.driver.close()
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
